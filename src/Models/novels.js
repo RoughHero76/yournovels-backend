@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Chapter from "./novels.js"; // Import the Chapter model
+import Chapter from "./novels.js";
 
 const chapterSchema = new mongoose.Schema({
     seqId: {
