@@ -21,12 +21,10 @@ const chapterSchema = new mongoose.Schema({
 chapterSchema.pre('save', async function (next) {
     try {
         if (!this.seqId) {
-            const lastChapter = await Chapter.findOne({}, {}, { sort: { 'seqId': -1 } });
-            if (lastChapter) {
-                this.seqId = lastChapter.seqId + 1;
-            } else {
-                this.seqId = 1;
-            }
+            const count = await Chapter.countDocuments();
+            this.seqId = count + 1;
+        } else {
+            this.seqId = 1;
         }
         next();
     } catch (error) {
