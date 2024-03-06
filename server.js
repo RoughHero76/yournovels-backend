@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import User from "./src/Models/userModel.js";
 import connectDB from "./src//DataBase/databaseConfig.js"
 import Novel from "./src/Models/novels.js";
+import cors from 'cors';
 
 dotenv.config({
     path: './.env'
@@ -16,7 +17,9 @@ dotenv.config({
 connectDB();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 6000;
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -54,11 +57,14 @@ app.get("/", (req, res) => {
 app.post('/register', async (req, res) => {
     try {
 
-        const { firstName, lastName, email, password, isAdmin, penName, isAuthor } = req.body;
+        const { firstName, lastName, username, email, password, isAdmin, penName, isAuthor } = req.body;
 
         let existingUser = await User.findOne({ email });
+        let existingUsername = await User.findOne({ username })
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
+        } else if (existingUsername) {
+            return res.status(400).json({ message: 'Username is already taken' })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -66,6 +72,7 @@ app.post('/register', async (req, res) => {
         const newUser = new User({
             firstName,
             lastName,
+            username,
             email,
             password: hashedPassword,
             isAdmin,
