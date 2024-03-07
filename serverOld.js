@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "./src/Models/userModel.js";
-import connectDB from "./src//DataBase/databaseConfig.js"
+import connectDB from "./src/DataBase/databaseConfig.js"
 import Novel from "./src/Models/novels.js";
 import cors from 'cors';
 
