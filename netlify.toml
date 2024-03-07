@@ -1,0 +1,17 @@
+[
+build
+]
+  command = "npm run build"
+  functions = "built-functions"
+  publish = "public"
+
+[
+dev
+]
+  command = "netlify-lambda serve functions"
+  targetPort = 9000
+
+[
+template.environment
+]
+  NETLIFY_LAMBDA_LATEST_RUNTIME = "nodejs20.x"
