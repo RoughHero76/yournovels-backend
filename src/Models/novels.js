@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import Chapter from "./novels.js";
+const mongoose = require("mongoose");
+const { Chapter } = require("./novels.js");
 
 const chapterSchema = new mongoose.Schema({
     seqId: {
@@ -74,4 +74,4 @@ const novelSchema = new mongoose.Schema({
 // Create a model for the novel
 const Novel = mongoose.model('Novel', novelSchema, 'Novels');
 
-export default Novel;
+module.exports = Novel;

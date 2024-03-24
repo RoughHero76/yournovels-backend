@@ -1,15 +1,15 @@
-import express from "express";
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import User from "../src/Models/userModel.js";
-import connectDB from "../src//DataBase/databaseConfig.js";
-import Novel from "../src/Models/novels.js";
-import cors from 'cors';
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+const User = require('../src/Models/userModel.js');
+const Novel = require('../src/Models/novels.js');
+const cors = require('cors');
+const connectDB = require('../src/DataBase/databaseConfig.js');
 
 dotenv.config({
-    path: './.env'
+    path: '../.env'
 });
 
 connectDB();
@@ -83,7 +83,6 @@ router.post('/register', async (req, res) => {
 // User authentication
 router.post('/login', async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
@@ -91,20 +90,29 @@ router.post('/login', async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
+
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_TOKEN, {
+
+        const payload = {
+            userId: user._id,
+            username: user.username,
+            email: user.email
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET_TOKEN, {
             expiresIn: process.env.JWT_SECRET_TOKEN_EXPIRY,
         });
 
-        res.status(200).json({ token });
+        res.status(200).json({ token, username: user.username, email: user.email });
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 // User novels route
@@ -211,4 +219,4 @@ router.post('/novels/:novelId/chapters', verifyToken, async (req, res) => {
 });
 
 
-export default router;
+module.exports = router;

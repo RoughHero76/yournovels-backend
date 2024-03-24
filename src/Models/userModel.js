@@ -1,7 +1,5 @@
-import mongoose from "mongoose"
-import jwt from "jsonwebtoken"
-import bccrypt from "bcrypt"
-import { Schema } from "mongoose"
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const userSchema = new Schema(
     {
@@ -52,4 +50,5 @@ const userSchema = new Schema(
 )
 
 const User = mongoose.model('User', userSchema, 'users');
-export default User;
+
+module.exports = User;
