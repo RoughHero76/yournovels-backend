@@ -270,10 +270,10 @@ const transporter = nodemailer.createTransport({
 
 router.post('/email', async (req, res) => {
     try {
-        const { fullName, phoneNumber, email, projectType, description } = req.body;
+        const { fullName, phoneNumber, email, projectType, projectDescription } = req.body;
 
         // Validate required fields
-        if (!fullName || !phoneNumber || !email || !projectType || !description) {
+        if (!fullName || !phoneNumber || !email || !projectType || !projectDescription) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -287,7 +287,7 @@ router.post('/email', async (req, res) => {
                 Phone Number: ${phoneNumber}
                 Email: ${email}
                 Project Type: ${projectType}
-                Description: ${description}
+                Description: ${projectDescription}
             `
         };
 
