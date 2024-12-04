@@ -352,7 +352,7 @@ router.post('/track', async (req, res) => {
 
         // Get overall visitor statistics
         const totalVisitors = await Visitor.countDocuments();
-        const uniqueVisitors = await Visitor.distinct('visitorId').count();
+        const uniqueVisitors = await Visitor.countDocuments({ visitorId: { $ne: null } });
         const countryBreakdown = await Visitor.aggregate([
             { $group: { _id: '$country', count: { $sum: 1 } } },
             { $sort: { count: -1 } }
@@ -379,7 +379,7 @@ router.post('/track', async (req, res) => {
 router.get('/stats', async (req, res) => {
     try {
         const totalVisitors = await Visitor.countDocuments();
-        const uniqueVisitors = await Visitor.distinct('visitorId').count();
+        const uniqueVisitors = await Visitor.countDocuments({ visitorId: { $ne: null } });
         const countryBreakdown = await Visitor.aggregate([
             { $group: { _id: '$country', count: { $sum: 1 } } },
             { $sort: { count: -1 } }
