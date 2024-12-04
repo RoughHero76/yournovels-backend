@@ -10,7 +10,6 @@ const visitorSchema = new mongoose.Schema({
     },
     ipAddress: {
         type: String,
-        required: true
     },
     country: {
         type: String,
