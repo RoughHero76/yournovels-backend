@@ -5,12 +5,14 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const User = require('../src/Models/userModel.js');
 const Novel = require('../src/Models/novels.js');
+const Visitor = require('../src/Models/visitors.js');
 const cors = require('cors');
 const connectDB = require('../src/DataBase/databaseConfig.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const nodemailer = require('nodemailer');
+const UAParser = require('ua-parser-js');
 
 dotenv.config({
     path: '../.env'
@@ -299,6 +301,105 @@ router.post('/email', async (req, res) => {
     catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ message: 'Failed to send email' });
+    }
+});
+
+router.post('/track', async (req, res) => {
+    try {
+        const {
+            visitorId,
+            country,
+            city,
+            region,
+            timestamp,
+            referrer,
+            geoLocation
+        } = req.body;
+
+        // Validate required fields
+        if (!visitorId) {
+            return res.status(400).json({ message: 'Visitor ID is required' });
+        }
+
+        // Parse user agent
+        const userAgent = req.get('User-Agent');
+        const parser = new UAParser(userAgent);
+        const deviceInfo = {
+            browser: parser.getBrowser().name,
+            os: parser.getOS().name,
+            platform: parser.getDevice().type || 'desktop'
+        };
+
+        // Prepare visitor data
+        const visitorData = {
+            visitorId,
+            ipAddress: req.ip,
+            country,
+            city,
+            region,
+            userAgent,
+            referrer,
+            lastVisit: timestamp ? new Date(timestamp) : new Date(),
+            deviceInfo,
+            geoLocation: geoLocation ? {
+                latitude: geoLocation.latitude,
+                longitude: geoLocation.longitude
+            } : undefined
+        };
+
+        // Update or create visitor
+        const visitor = await Visitor.updateVisitorInfo(visitorData);
+
+        // Get overall visitor statistics
+        const totalVisitors = await Visitor.countDocuments();
+        const uniqueVisitors = await Visitor.distinct('visitorId').count();
+        const countryBreakdown = await Visitor.aggregate([
+            { $group: { _id: '$country', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+
+        res.status(200).json({
+            message: 'Visitor tracked successfully',
+            visitor,
+            stats: {
+                totalVisitors,
+                uniqueVisitors,
+                countryBreakdown
+            }
+        });
+    } catch (error) {
+        console.error('Error tracking visitor:', error);
+        res.status(500).json({
+            message: 'Failed to track visitor',
+            error: error.message
+        });
+    }
+});
+
+router.get('/stats', async (req, res) => {
+    try {
+        const totalVisitors = await Visitor.countDocuments();
+        const uniqueVisitors = await Visitor.distinct('visitorId').count();
+        const countryBreakdown = await Visitor.aggregate([
+            { $group: { _id: '$country', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+        const recentVisitors = await Visitor.find()
+            .sort({ lastVisit: -1 })
+            .limit(10);
+
+        res.status(200).json({
+            totalVisitors,
+            uniqueVisitors,
+            countryBreakdown,
+            recentVisitors
+        });
+    } catch (error) {
+        console.error('Error fetching visitor stats:', error);
+        res.status(500).json({
+            message: 'Failed to fetch visitor statistics',
+            error: error.message
+        });
     }
 });
 
